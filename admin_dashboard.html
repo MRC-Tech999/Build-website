@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+  <div class="dashboard">
+    <div class="sidebar">
+      <div class="logo">Admin Panel</div>
+      <ul>
+        <li class="active"><a href="#"><i class="fas fa-home"></i> Dashboard</a></li>
+        <li><a href="#"><i class="fas fa-users"></i> Users</a></li>
+        <li><a href="#" id="admin-accounts-link"><i class="fas fa-user-shield"></i> Admin Accounts</a></li> <li><a href="#"><i class="fas fa-box"></i> Products</a></li>
+        <li><a href="#"><i class="fas fa-cog"></i> Settings</a></li>
+        <li><a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+      </ul>
+    </div>
+
+    <div class="main-content">
+      <div class="header">
+        <div class="header-left">
+          <h1>Dashboard</h1>
+        </div>
+        <div class="header-right">
+          <div class="search-bar">
+            <input type="text" placeholder="Search...">
+            <i class="fas fa-search"></i>
+          </div>
+          <div class="notifications">
+            <i class="fas fa-bell"></i>
+            <span class="badge" id="notification-badge">0</span>
+          </div>
+          <div class="user-profile">
+            <img src="https://via.placeholder.com/40" alt="User">
+            <div class="dropdown">
+              <a href="#">Settings</a>
+              <a href="#" id="logout-dropdown-btn">Logout</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="card" id="user-management-card">
+          <h2>Users</h2>
+          <button id="add-user-btn" class="btn">Add User</button>
+          <table id="user-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              </tbody>
+          </table>
+        </div>
+
+        <div class="card" style="margin-top: 20px; display: none;" id="admin-accounts-card"> <h2>Admin Accounts</h2>
+            <button id="add-admin-btn" class="btn">Add New Admin</button>
+            <table id="admin-table">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+        </div>
+
+        <div class="card" style="margin-top: 20px;">
+            <h2>User Messages</h2>
+            <div id="messages-list">
+                <p>No new messages.</p>
+            </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="add-user-modal" class="modal">
+    <div class="modal-content">
+      <span class="close" data-modal="add-user-modal">×</span>
+      <h2>Add User</h2>
+      <form id="user-form">
+        <label for="name">Name</label>
+        <input type="text" id="name" required>
+        <label for="email">Email</label>
+        <input type="email" id="email" required>
+        <label for="role">Role</label>
+        <input type="text" id="role" required>
+        <button type="submit">Save</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="add-admin-modal" class="modal"> <div class="modal-content">
+      <span class="close" data-modal="add-admin-modal">×</span>
+      <h2>Add New Admin</h2>
+      <form id="admin-form">
+        <label for="adminUsername">Username</label>
+        <input type="text" id="adminUsername" required>
+        <label for="adminEmail">Email</label>
+        <input type="email" id="adminEmail" required>
+        <label for="adminPassword">Password</label>
+        <input type="password" id="adminPassword" required>
+        <button type="submit">Add Admin</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // --- Security Check: Redirect if not logged in ---
+    if (localStorage.getItem('isLoggedIn') !== 'true') {
+        window.location.href = 'login.html';
+    }
+
+    // --- Logout Functionality ---
+    document.getElementById('logout-btn').addEventListener('click', (e) => {
+        e.preventDefault(); // Prevent default link behavior
+        localStorage.removeItem('isLoggedIn');
+        localStorage.removeItem('loggedInUser');
+        window.location.href = 'login.html';
+    });
+    document.getElementById('logout-dropdown-btn').addEventListener('click', (e) => {
+        e.preventDefault(); // Prevent default link behavior
+        localStorage.removeItem('isLoggedIn');
+        localStorage.removeItem('loggedInUser');
+        window.location.href = 'login.html';
+    });
+  </script>
+  <script src="script.js"></script>
+</body>
+</html>
