@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apple Liquid Glass HTML Editor - Multi File</title>
+    <style>
+        /* Global Styles & iOS-inspired Typography */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to bottom right, #1a1a2e, #16213e, #0f3460);
+            color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .editor-container {
+            display: flex;
+            flex-direction: column;
+            width: 90vw;
+            max-width: 1400px;
+            height: 90vh;
+            max-height: 900px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            overflow: hidden;
+        }
+
+        .editor-header {
+            padding: 15px 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #f0f0f0;
+            font-weight: 600;
+            font-size: 1.1em;
+            letter-spacing: 0.5px;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            flex-wrap: wrap;
+        }
+
+        .editor-header span {
+            color: #88c0d0;
+        }
+
+        /* New layout for multi-panel editor */
+        .editor-content {
+            display: flex;
+            flex-grow: 1;
+            padding: 15px;
+            gap: 15px;
+            flex-direction: row; /* Default for larger screens */
+        }
+
+        .code-panels {
+            flex: 2; /* Code panels take more space */
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .preview-panel {
+            flex: 1; /* Preview panel takes less space */
+            display: flex;
+            flex-direction: column;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            overflow: hidden;
+        }
+
+        .editor-panel {
+            flex: 1; /* Each code panel takes equal height */
+            display: flex;
+            flex-direction: column;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 10px 15px;
+            font-size: 0.9em;
+            color: #b0b0b0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.02);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+        }
+
+        textarea {
+            flex-grow: 1;
+            width: 100%;
+            padding: 15px;
+            background: transparent;
+            border: none;
+            color: #e0e0e0;
+            font-family: 'SF Mono', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
+            font-size: 0.95em;
+            resize: none;
+            outline: none;
+            line-height: 1.5;
+            -webkit-overflow-scrolling: touch;
+            spellcheck: false;
+            autocapitalize: off;
+            autocomplete: off;
+            autocorrect: off;
+            box-sizing: border-box;
+        }
+
+        textarea::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        textarea::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        textarea::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            border: 2px solid transparent;
+            background-clip: content-box;
+        }
+
+        textarea::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .preview-output {
+            flex-grow: 1;
+            background: #ffffff;
+            border-bottom-left-radius: 15px;
+            border-bottom-right-radius: 15px;
+            overflow: auto;
+            color: #333;
+            padding: 15px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 5px;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #f0f0f0;
+            padding: 8px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background 0.3s ease, border-color 0.3s ease;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-primary {
+            background: #007aff;
+            border-color: #007aff;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #005bb5;
+            border-color: #005bb5;
+        }
+
+        /* --- Responsive Design (Media Queries) --- */
+
+        /* For screens between 769px and 1200px */
+        @media (max-width: 1200px) {
+            .editor-content {
+                flex-direction: column;
+            }
+            .code-panels, .preview-panel {
+                flex: none;
+                height: 50%;
+            }
+        }
+
+
+        /* For smaller screens (e.g., portrait tablets, smartphones) */
+        @media (max-width: 768px) {
+            .editor-container {
+                width: 95vw;
+                height: 95vh;
+                flex-direction: column;
+            }
+
+            .editor-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+                padding: 10px 15px;
+            }
+
+            .action-buttons {
+                width: 100%;
+                justify-content: space-around;
+                margin-top: 10px;
+            }
+
+            .editor-content {
+                flex-direction: column;
+                padding: 10px;
+                gap: 10px;
+            }
+
+            .code-panels, .preview-panel {
+                flex: none;
+                height: auto;
+            }
+
+            .code-panels {
+                height: 60%;
+            }
+            .preview-panel {
+                height: 40%;
+            }
+            .editor-panel {
+                flex: none;
+                min-height: 100px;
+            }
+        }
+
+        /* For very small screens (smartphones) */
+        @media (max-width: 480px) {
+            .editor-container {
+                border-radius: 10px;
+            }
+
+            .editor-header {
+                font-size: 1em;
+            }
+
+            .editor-panel {
+                border-radius: 10px;
+            }
+
+            .btn {
+                padding: 6px 10px;
+                font-size: 0.8em;
+            }
+
+            textarea, .preview-output {
+                padding: 10px;
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="editor-container">
+        <div class="editor-header">
+            <span>HTML/CSS/JS Editor <span style="font-weight: 400; opacity: 0.7;">(Separate Files)</span></span>
+            <div class="action-buttons">
+                <button class="btn" onclick="downloadProject()">Download Project</button>
+                <button class="btn btn-primary" onclick="updatePreview()">Run Code</button>
+            </div>
+        </div>
+        <div class="editor-content">
+            <div class="code-panels">
+                <div class="editor-panel">
+                    <div class="panel-header">HTML Code</div>
+                    <textarea id="htmlCode" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off"><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Multi-File Project</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="card">
+        <h1>Hello from Multi-File Editor!</h1>
+        <p>This page uses separate HTML, CSS, and JavaScript files.</p>
+        <p id="message">Click the button below!</p>
+        <button class="button" id="myButton">Say Hello</button>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html></textarea>
+                </div>
+                <div class="editor-panel">
+                    <div class="panel-header">CSS Code (style.css)</div>
+                    <textarea id="cssCode" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off">body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f2f5;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.card {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    text-align: center;
+    max-width: 500px;
+    width: 100%;
+}
+
+h1 {
+    color: #3f51b5; /* A nice blue */
+    margin-bottom: 15px;
+    font-size: 2em;
+}
+
+p {
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+.button {
+    background-color: #3f51b5;
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.3s ease;
+}
+
+.button:hover {
+    background-color: #303f9f;
+}
+
+/* Responsive CSS for preview */
+@media (max-width: 600px) {
+    .card {
+        padding: 20px;
+        border-radius: 8px;
+    }
+    h1 {
+        font-size: 1.8em;
+    }
+    .button {
+        padding: 10px 20px;
+        font-size: 0.9em;
+    }
+}</textarea>
+                </div>
+                <div class="editor-panel">
+                    <div class="panel-header">JavaScript Code (script.js)</div>
+                    <textarea id="jsCode" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off">document.addEventListener('DOMContentLoaded', () => {
+    const button = document.getElementById('myButton');
+    const message = document.getElementById('message');
+
+    if (button && message) {
+        button.addEventListener('click', () => {
+            message.textContent = 'Hello, JavaScript is working!';
+            button.style.backgroundColor = '#4CAF50'; // Change button color
+        });
+    }
+});</textarea>
+                </div>
+            </div>
+            <div class="preview-panel">
+                <div class="panel-header">Live Preview</div>
+                <iframe id="livePreviewFrame" class="preview-output" sandbox="allow-scripts allow-forms allow-popups allow-modals allow-same-origin"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script>
+        const htmlCodeTextarea = document.getElementById('htmlCode');
+        const cssCodeTextarea = document.getElementById('cssCode');
+        const jsCodeTextarea = document.getElementById('jsCode');
+        const livePreviewFrame = document.getElementById('livePreviewFrame');
+
+        function updatePreview() {
+            const htmlCode = htmlCodeTextarea.value;
+            const cssCode = cssCodeTextarea.value;
+            const jsCode = jsCodeTextarea.value;
+
+            const fullHtml = `
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Live Preview</title>
+                    <style>${cssCode}</style>
+                </head>
+                <body>
+                    ${htmlCode}
+                    <script>${jsCode}<\/script>
+                </body>
+                </html>
+            `;
+
+            livePreviewFrame.srcdoc = fullHtml;
+        }
+
+        async function downloadProject() {
+            const htmlContent = htmlCodeTextarea.value;
+            const cssContent = cssCodeTextarea.value;
+            const jsContent = jsCodeTextarea.value;
+
+            const zip = new JSZip();
+            zip.file("index.html", htmlContent);
+            zip.file("style.css", cssContent);
+            zip.file("script.js", jsContent);
+
+            zip.generateAsync({type:"blob"})
+               .then(function(content) {
+                   saveAs(content, "web_project.zip");
+               })
+               .catch(function(error) {
+                   console.error("Error generating zip:", error);
+                   alert("Failed to download project. Please check the console for errors.");
+               });
+        }
+
+        updatePreview();
+
+        htmlCodeTextarea.addEventListener('input', updatePreview);
+        cssCodeTextarea.addEventListener('input', updatePreview);
+        jsCodeTextarea.addEventListener('input', updatePreview);
+    </script>
+</body>
+</html>
