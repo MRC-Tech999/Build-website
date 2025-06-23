@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apple Liquid Glass HTML Editor - Single File</title>
+    <style>
+        /* Global Styles & iOS-inspired Typography */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to bottom right, #1a1a2e, #16213e, #0f3460); /* Deep, modern dark background */
+            color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden; /* Hide body scrollbar, let editor content handle scrolling */
+        }
+
+        /* Editor Container - The "Liquid Glass" Element */
+        .editor-container {
+            display: flex;
+            flex-direction: column;
+            width: 90vw; /* Utilisation de vw pour une largeur fluide */
+            max-width: 1400px;
+            height: 90vh; /* Utilisation de vh pour une hauteur fluide */
+            max-height: 900px;
+            background: rgba(255, 255, 255, 0.05); /* Very subtle white background for transparency */
+            border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); /* Soft shadow for depth */
+            border: 1px solid rgba(255, 255, 255, 0.1); /* Subtle white border */
+            backdrop-filter: blur(15px); /* The core "liquid glass" blur effect */
+            -webkit-backdrop-filter: blur(15px); /* Safari support */
+            overflow: hidden; /* Ensures rounded corners are respected for children */
+        }
+
+        /* Editor Header */
+        .editor-header {
+            padding: 15px 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #f0f0f0;
+            font-weight: 600;
+            font-size: 1.1em;
+            letter-spacing: 0.5px;
+            background: rgba(255, 255, 255, 0.03); /* Slightly lighter glass for header */
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            flex-wrap: wrap; /* Allow header elements to wrap */
+        }
+
+        .editor-header span {
+            color: #88c0d0; /* A subtle accent color for the concept text */
+        }
+
+        /* Editor Panels Layout */
+        .editor-panels {
+            display: flex;
+            flex-grow: 1; /* Take remaining vertical space */
+            padding: 15px;
+            gap: 15px; /* Space between code and preview panels */
+            flex-direction: row; /* By default, panels are side-by-side */
+        }
+
+        .editor-panel {
+            flex: 1; /* Each panel takes equal width */
+            display: flex;
+            flex-direction: column;
+            background: rgba(0, 0, 0, 0.2); /* Slightly darker glass for individual panels */
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            overflow: hidden; /* For scrollable content inside */
+        }
+
+        .panel-header {
+            padding: 10px 15px;
+            font-size: 0.9em;
+            color: #b0b0b0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.02);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+        }
+
+        /* Textarea for Code Input */
+        textarea {
+            flex-grow: 1; /* Takes all available space in its panel */
+            width: 100%;
+            padding: 15px;
+            background: transparent; /* Transparent to show panel background */
+            border: none;
+            color: #e0e0e0; /* Light text for code */
+            font-family: 'SF Mono', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace; /* Monospace for code */
+            font-size: 0.95em;
+            resize: none; /* Disable manual resize handle */
+            outline: none; /* Remove focus outline */
+            line-height: 1.5;
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+            spellcheck: false; /* Disable spell check for code */
+            autocapitalize: off;
+            autocomplete: off;
+            autocorrect: off;
+            box-sizing: border-box; /* Include padding in width */
+        }
+
+        /* Custom Scrollbar for WebKit browsers (iOS/Safari/Chrome) */
+        textarea::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        textarea::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        textarea::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            border: 2px solid transparent; /* Creates padding around the thumb */
+            background-clip: content-box; /* Ensures border doesn't cover thumb */
+        }
+
+        textarea::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Live Preview Output Area */
+        .preview-output {
+            flex-grow: 1;
+            background: #ffffff; /* Standard white background for web content preview */
+            border-bottom-left-radius: 15px;
+            border-bottom-right-radius: 15px;
+            overflow: auto; /* Enable scrolling for preview content */
+            color: #333; /* Default text color for preview */
+            padding: 15px; /* Add padding to preview content */
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap; /* Allow buttons to wrap */
+            margin-top: 5px; /* Small space if buttons wrap below title */
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #f0f0f0;
+            padding: 8px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background 0.3s ease, border-color 0.3s ease;
+            backdrop-filter: blur(5px); /* Subtle glass effect for buttons */
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-primary {
+            background: #007aff; /* Apple's signature blue */
+            border-color: #007aff;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #005bb5;
+            border-color: #005bb5;
+        }
+
+        /* --- Responsive Design (Media Queries) --- */
+
+        /* For smaller screens (e.g., portrait tablets, smartphones) */
+        @media (max-width: 768px) {
+            .editor-container {
+                width: 95vw;
+                height: 95vh;
+                flex-direction: column;
+            }
+
+            .editor-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+                padding: 10px 15px;
+            }
+
+            .action-buttons {
+                width: 100%;
+                justify-content: space-around;
+                margin-top: 10px;
+            }
+
+            .editor-panels {
+                flex-direction: column;
+                padding: 10px;
+                gap: 10px;
+            }
+
+            .editor-panel {
+                flex: none;
+                height: 50%;
+            }
+        }
+
+        /* For very small screens (smartphones) */
+        @media (max-width: 480px) {
+            .editor-container {
+                border-radius: 10px;
+            }
+
+            .editor-header {
+                font-size: 1em;
+            }
+
+            .editor-panel {
+                border-radius: 10px;
+            }
+
+            .btn {
+                padding: 6px 10px;
+                font-size: 0.8em;
+            }
+
+            textarea, .preview-output {
+                padding: 10px;
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="editor-container">
+        <div class="editor-header">
+            <span>HTML Editor <span style="font-weight: 400; opacity: 0.7;">(Single File)</span></span>
+            <div class="action-buttons">
+                <button class="btn" onclick="downloadHtml()">Download</button>
+                <button class="btn btn-primary" onclick="updatePreview()">Run Code</button>
+            </div>
+        </div>
+        <div class="editor-panels">
+            <div class="editor-panel">
+                <div class="panel-header">HTML Code</div>
+                <textarea id="htmlCode" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off"><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Awesome Page</title>
+    <style>
+        body {
+            font-family: -apple-system, sans-serif;
+            background-color: #f8f8f8;
+            color: #333;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #007aff; /* Apple Blue */
+            font-size: 2.2em;
+            margin-bottom: 10px;
+        }
+        p {
+            margin-bottom: 15px;
+            color: #555;
+        }
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            margin-top: 20px;
+            border: 1px solid #eee;
+        }
+        .button {
+            display: inline-block;
+            background-color: #007aff;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+        }
+        .button:hover {
+            background-color: #005bb5;
+        }
+
+        /* Responsive adjustments for preview content */
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+            .card {
+                padding: 20px;
+            }
+        }
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            h1 {
+                font-size: 1.5em;
+            }
+            .card {
+                padding: 15px;
+                border-radius: 8px;
+            }
+            .button {
+                padding: 8px 15px;
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Welcome to iOS 26 Web Design!</h1>
+        <p>This is a live preview demonstrating a clean, modern, and fluid aesthetic, inspired by Apple's latest UI principles.</p>
+        <p>The 'liquid glass' effect is achieved using CSS <code>backdrop-filter</code> on the editor panels.</p>
+        <a href="#" class="button">Learn More</a>
+    </div>
+</body>
+</html></textarea>
+            </div>
+            <div class="editor-panel">
+                <div class="panel-header">Live Preview</div>
+                <div class="preview-output" id="livePreview">
+                    <h1>Welcome to iOS 26 Web Design!</h1>
+                    <p>This is a live preview demonstrating a clean, modern, and fluid aesthetic, inspired by Apple's latest UI principles.</p>
+                    <p>The 'liquid glass' effect is achieved using CSS <code>backdrop-filter</code> on the editor panels.</p>
+                    <a href="#" class="button">Learn More</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const htmlCodeTextarea = document.getElementById('htmlCode');
+        const livePreviewDiv = document.getElementById('livePreview');
+
+        function updatePreview() {
+            livePreviewDiv.innerHTML = htmlCodeTextarea.value;
+        }
+
+        function downloadHtml() {
+            const code = htmlCodeTextarea.value;
+            const blob = new Blob([code], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'index.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Initial update of the preview when the page loads
+        updatePreview();
+
+        // Update the preview automatically as the user types
+        htmlCodeTextarea.addEventListener('input', updatePreview);
+    </script>
+</body>
+</html>
